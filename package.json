@@ -21,7 +21,7 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-relay": "^18.2.0",
-    "relay-mock-directive-plugin": "file:../mock-spec-demo-relay-plugin",
+    "relay-mock-directive-plugin": "github:magicmark/mock-spec-demo-relay-plugin",
     "relay-runtime": "^18.2.0",
     "shiki": "^3.23.0",
     "tm-grammars": "^1.31.15"
