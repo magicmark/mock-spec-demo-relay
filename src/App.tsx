@@ -250,6 +250,7 @@ function PageFrame({ children }: { children: React.ReactNode }) {
           <a href="https://gaps.graphql.org/GAP-10/" target="_blank" rel="noreferrer">Spec</a>
           <a href="https://github.com/magicmark/mock-spec-demo-relay" target="_blank" rel="noreferrer">Source</a>
           <a href="https://github.com/magicmark/mock-spec-demo-relay-plugin" target="_blank" rel="noreferrer">Relay Plugin</a>
+          <a href="https://mock-spec-demo.larah.me/" target="_blank" rel="noreferrer">Apollo Version</a>
         </nav>
       </div>
 
