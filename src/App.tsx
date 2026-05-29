@@ -29,8 +29,6 @@ import GetCountryWithCapitalErrorMock from "./queries/__graphql_mocks__/GetCount
 import GetCountryWithPopulationMock from "./queries/__graphql_mocks__/GetCountryWithPopulation.json";
 import GetCountryWithWeatherMock from "./queries/__graphql_mocks__/GetCountryWithWeather.json";
 
-type QueryDef = ConcreteRequest;
-
 const DEMOS = {
   "operation-mock": {
     label: "Operation",
@@ -346,7 +344,7 @@ function DemoSelector({
 }
 
 function DemoPanel({ query, mockFilename, mockContent, variables }: {
-  query: QueryDef;
+  query: ConcreteRequest;
   mockFilename: string | null;
   mockContent: unknown;
   variables?: Record<string, unknown>;

@@ -2,29 +2,7 @@ import type { ConcreteRequest } from "relay-runtime";
 
 function makeQuery(name: string, text: string): ConcreteRequest {
   return {
-    kind: "Request",
-    fragment: {
-      kind: "Fragment",
-      name,
-      type: "Query",
-      metadata: null,
-      argumentDefinitions: [],
-      selections: [],
-    },
-    operation: {
-      kind: "Operation",
-      name,
-      argumentDefinitions: [],
-      selections: [],
-    },
-    params: {
-      name,
-      operationKind: "query",
-      text,
-      id: null,
-      cacheID: name,
-      metadata: {},
-    },
+    params: { name, operationKind: "query", text, id: null, cacheID: name, metadata: {} },
   } as unknown as ConcreteRequest;
 }
 
