@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
-import { fetchQuery } from "relay-runtime";
-import type { RequestParameters } from "relay-runtime";
+import { useEffect, useState } from "react";
+import type { ConcreteRequest } from "relay-runtime";
 import type { HighlighterCore, LanguageRegistration } from "shiki/core";
 import graphqlGrammar from "tm-grammars/grammars/graphql.json";
 import jsonGrammar from "tm-grammars/grammars/json.json";
-import { environment } from "./relay/environment";
+import { useExecuteQuery } from "./relay/useExecuteQuery";
 import {
   GET_COUNTRIES_LIST_MOCK,
   GET_COUNTRIES_WITH_POPULATION_FRAGMENT_MOCK,
@@ -30,78 +29,78 @@ import GetCountryWithCapitalErrorMock from "./queries/__graphql_mocks__/GetCount
 import GetCountryWithPopulationMock from "./queries/__graphql_mocks__/GetCountryWithPopulation.json";
 import GetCountryWithWeatherMock from "./queries/__graphql_mocks__/GetCountryWithWeather.json";
 
-type QueryDef = RequestParameters & { __brand: "query" };
+type QueryDef = ConcreteRequest;
 
 const DEMOS = {
   "operation-mock": {
     label: "Operation",
-    query: GET_COUNTRIES_MOCK as QueryDef,
+    query: GET_COUNTRIES_MOCK as ConcreteRequest,
     mockFilename: "GetCountries.json",
     mockContent: GetCountriesMock,
   },
   "field-existing": {
     label: "Field (Existing)",
-    query: GET_COUNTRY_WITH_MOCK as QueryDef,
+    query: GET_COUNTRY_WITH_MOCK as ConcreteRequest,
     mockFilename: "GetCountry.json",
     mockContent: GetCountryMock,
     variables: { code: "US" },
   },
   "fragment-field-existing": {
     label: "Fragment Field (Existing)",
-    query: GET_COUNTRY_WITH_FRAGMENT_MOCK as QueryDef,
+    query: GET_COUNTRY_WITH_FRAGMENT_MOCK as ConcreteRequest,
     mockFilename: "CountryCapitalFragment.json",
     mockContent: CountryCapitalFragmentMock,
     variables: { code: "US" },
   },
   "field-alias": {
     label: "Field (Alias)",
-    query: GET_COUNTRY_ALIAS_MOCK as QueryDef,
+    query: GET_COUNTRY_ALIAS_MOCK as ConcreteRequest,
     mockFilename: "GetCountryAlias.json",
     mockContent: GetCountryAliasMock,
     variables: { code: "US" },
   },
   "list-field": {
     label: "List Field",
-    query: GET_COUNTRIES_LIST_MOCK as QueryDef,
+    query: GET_COUNTRIES_LIST_MOCK as ConcreteRequest,
     mockFilename: "GetCountriesList.json",
     mockContent: GetCountriesListMock,
   },
   "list-field-nested": {
     label: "List Field (Nested)",
-    query: GET_COUNTRIES_WITH_POPULATION_MOCK as QueryDef,
+    query: GET_COUNTRIES_WITH_POPULATION_MOCK as ConcreteRequest,
     mockFilename: "GetCountriesWithPopulation.json",
     mockContent: GetCountriesWithPopulationMock,
   },
   "list-field-fragment": {
     label: "List Field in Fragment",
-    query: GET_COUNTRIES_WITH_POPULATION_FRAGMENT_MOCK as QueryDef,
+    query: GET_COUNTRIES_WITH_POPULATION_FRAGMENT_MOCK as ConcreteRequest,
     mockFilename: "CountryPopulationFragment.json",
     mockContent: CountryPopulationFragmentMock,
   },
   "field-new": {
     label: "Field (New)",
-    query: GET_COUNTRY_NEW_FIELD as QueryDef,
+    query: GET_COUNTRY_NEW_FIELD as ConcreteRequest,
     mockFilename: "GetCountryWithPopulation.json",
     mockContent: GetCountryWithPopulationMock,
     variables: { code: "US" },
   },
   "field-new-nested": {
     label: "Field (New w/ Selection Set)",
-    query: GET_COUNTRY_NESTED_NEW as QueryDef,
+    query: GET_COUNTRY_NESTED_NEW as ConcreteRequest,
     mockFilename: "GetCountryWithWeather.json",
     mockContent: GetCountryWithWeatherMock,
     variables: { code: "US" },
   },
   "inline-value": {
     label: "Field (Inline Value)",
-    query: GET_COUNTRY_INLINE_VALUE as QueryDef,
+    query: GET_COUNTRY_INLINE_VALUE as ConcreteRequest,
     mockFilename: null,
     mockContent: null,
     variables: { code: "US" },
   },
   "field-error": {
     label: "Field (Error)",
-    query: GET_COUNTRY_CAPITAL_ERROR as QueryDef,
+    query: GET_COUNTRY_CAPITAL_ERROR as ConcreteRequest,
     mockFilename: "GetCountryWithCapitalError.json",
     mockContent: GetCountryWithCapitalErrorMock,
     variables: { code: "US" },
@@ -310,7 +309,7 @@ function DemoSelector({
         {activeGroup.demos.map((key) => {
           const demo = DEMOS[key];
           const isSelected = selectedDemo === key;
-          const operationName = demo.query.name;
+          const operationName = demo.query.params.name;
 
           return (
             <button
@@ -352,36 +351,9 @@ function DemoPanel({ query, mockFilename, mockContent, variables }: {
   mockContent: unknown;
   variables?: Record<string, unknown>;
 }) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<unknown>(null);
+  const { loading, error, data, execute: executeQuery } = useExecuteQuery(query, variables);
 
-  const executeQuery = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    setData(null);
-
-    const operation = {
-      id: query.id ?? null,
-      text: query.text ?? null,
-      name: query.name,
-      operationKind: query.operationKind as "query",
-      metadata: {},
-    };
-
-    fetchQuery(environment, operation as never, variables ?? {}).subscribe({
-      next: (result: unknown) => {
-        setData(result);
-        setLoading(false);
-      },
-      error: (err: Error) => {
-        setError(err.message);
-        setLoading(false);
-      },
-    });
-  }, [query, variables]);
-
-  const querySource = dedent(query.text ?? "");
+  const querySource = dedent(query.params.text ?? "");
   const mockSource = JSON.stringify(mockContent, null, 2);
 
   const panelStyle: React.CSSProperties = {
@@ -476,7 +448,7 @@ function App() {
 
       <DemoPanel
         key={selectedDemo}
-        query={demo.query as QueryDef}
+        query={demo.query as ConcreteRequest}
         mockFilename={demo.mockFilename ?? null}
         mockContent={demo.mockContent ?? null}
         variables={"variables" in demo ? demo.variables : undefined}

@@ -1,16 +1,31 @@
-import type { RequestParameters, OperationType } from "relay-runtime";
+import type { ConcreteRequest } from "relay-runtime";
 
-type QueryDef = RequestParameters & { __brand: "query" };
-
-function makeQuery(name: string, text: string): QueryDef {
+function makeQuery(name: string, text: string): ConcreteRequest {
   return {
-    name,
-    id: null,
-    text,
-    operationKind: "query",
-    metadata: {},
-    cacheID: name,
-  } as unknown as QueryDef;
+    kind: "Request",
+    fragment: {
+      kind: "Fragment",
+      name,
+      type: "Query",
+      metadata: null,
+      argumentDefinitions: [],
+      selections: [],
+    },
+    operation: {
+      kind: "Operation",
+      name,
+      argumentDefinitions: [],
+      selections: [],
+    },
+    params: {
+      name,
+      operationKind: "query",
+      text,
+      id: null,
+      cacheID: name,
+      metadata: {},
+    },
+  } as unknown as ConcreteRequest;
 }
 
 export const GET_COUNTRY_WITH_MOCK = makeQuery(
@@ -170,4 +185,3 @@ export const GET_COUNTRY_INLINE_VALUE = makeQuery(
 }`
 );
 
-export type CountryQuery = OperationType;
